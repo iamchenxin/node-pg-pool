@@ -1,15 +1,14 @@
 /* @flow
 **/
 
-var EventEmitter = require('events').EventEmitter
+var EventEmitter = require('events').EventEmitter;
 const pg = require('pg');
 const Client = pg.Client;
 import type {
   ResultSet,
   QueryConfig,
   QueryCallback,
-  ConnectCallback,
-  DoneCallback
+  QueryType
 } from 'pg';
 
 //you can pass properties to the pool
@@ -57,15 +56,34 @@ type PgPoolConfig = {
   Promise: any,
   onCreate: Function,
 };
-
+type PoolConnectCallback = (err: Error|null, client: Client|null, done: DoneCallback) => void;
+type DoneCallback = (ifErr?: mixed) => void;
+/*
 declare class Pool_Client extends Client {
   release(ifErr?: boolean): void;
+}
+*/
+// Do not extends from Client, cause some functions should not be used in
+// client returned from Pool.connect. ex: connect and end.
+type Pool_Client = {
+  release(ifErr?: boolean): void,
+
+  query:
+  ( (query: QueryConfig|string, callback?: QueryCallback) => QueryType ) &
+  ( (text: string, values: Array<any>, callback?: QueryCallback) => QueryType ),
+
+  on:
+  ((event: 'drain', listener: () => void) => EventEmitter )&
+  ((event: 'error', listener: (err: Error) => void) => EventEmitter )&
+  ((event: 'notification', listener: (message: any) => void) => EventEmitter )&
+  ((event: 'notice', listener: (message: any) => void) => EventEmitter )&
+  ((event: 'end', listener: () => void) => EventEmitter ),
 }
 
 declare class Pool extends EventEmitter {
   constructor(options: $Shape<PgPoolConfig>, Client?: Class<Client>): void;
-  connect(cb?: ConnectCallback): Promise<Pool_Client>;
-  take(cb?: ConnectCallback): Promise<Pool_Client>;
+  connect(cb?: PoolConnectCallback): Promise<Pool_Client>;
+  take(cb?: PoolConnectCallback): Promise<Pool_Client>;
   end(cb?: DoneCallback): Promise<void>;
 
 // Note: not like the pg's Client, the Pool.query return a Promise,
