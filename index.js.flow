@@ -8,7 +8,8 @@ import type {
   ResultSet,
   QueryConfig,
   QueryCallback,
-  QueryType
+  QueryType,
+  PG_ERROR,
 } from 'pg';
 
 //you can pass properties to the pool
@@ -56,7 +57,7 @@ type PgPoolConfig = {
   Promise: any,
   onCreate: Function,
 };
-type PoolConnectCallback = (err: Error|null, client: Client|null, done: DoneCallback) => void;
+type PoolConnectCallback = (err: PG_ERROR|null, client: Client|null, done: DoneCallback) => void;
 type DoneCallback = (ifErr?: mixed) => void;
 /*
 declare class Pool_Client extends Client {
@@ -74,7 +75,7 @@ type Pool_Client = {
 
   on:
   ((event: 'drain', listener: () => void) => EventEmitter )&
-  ((event: 'error', listener: (err: Error) => void) => EventEmitter )&
+  ((event: 'error', listener: (err: PG_ERROR) => void) => EventEmitter )&
   ((event: 'notification', listener: (message: any) => void) => EventEmitter )&
   ((event: 'notice', listener: (message: any) => void) => EventEmitter )&
   ((event: 'end', listener: () => void) => EventEmitter ),
@@ -95,7 +96,7 @@ declare class Pool extends EventEmitter {
   on:
   ((event: 'connect', listener: (client: Pool_Client) => void) => EventEmitter )&
   ((event: 'acquire', listener: (client: Pool_Client) => void) => EventEmitter )&
-  ((event: "error", listener: (err: Error) => void) => EventEmitter )&
+  ((event: "error", listener: (err: PG_ERROR) => void) => EventEmitter )&
   ((event: string, listener: Function) => EventEmitter);
 }
 
